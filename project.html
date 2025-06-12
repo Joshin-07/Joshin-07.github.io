@@ -3,66 +3,60 @@
 <head>
   <title>Student Academic Planner Demo</title>
   <style>
-    /* General Body Styling */
+    /* --- YOUR ORIGINAL CSS STARTS HERE --- */
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font */
-      max-width: 700px; /* Slightly wider */
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 700px;
       margin: 30px auto;
       padding: 25px;
-      background: linear-gradient(to bottom, #e0f2f7, #c1e7f0); /* Subtle gradient background */
+      background: linear-gradient(to bottom, #e0f2f7, #c1e7f0);
       color: #333;
-      border: none; /* Remove border */
-      border-radius: 15px; /* More rounded corners */
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15); /* Stronger, softer shadow */
-      transition: all 0.3s ease; /* Smooth transitions for hover effects etc. */
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
     }
 
-    /* Headings */
     h1, h2 {
       text-align: center;
       cursor: pointer;
       margin-top: 25px;
-      color: #0056b3; /* A pleasant blue */
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.05); /* Subtle text shadow */
+      color: #0056b3;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
       transition: color 0.3s ease;
-      display: flex; /* Make headings a flex container */
-      justify-content: center; /* Center content horizontally */
-      align-items: center; /* Center content vertically */
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     h1:hover, h2:hover {
-      color: #003f7f; /* Darker blue on hover */
+      color: #003f7f;
     }
 
-    /* Arrow styling */
     .arrow {
-      margin-left: 10px; /* Space between text and arrow */
-      transition: transform 0.3s ease; /* Smooth rotation */
+      margin-left: 10px;
+      transition: transform 0.3s ease;
     }
 
     .arrow.rotated {
-      transform: rotate(180deg); /* Rotate 180 degrees when content is open */
+      transform: rotate(180deg);
     }
 
-    /* Section Content */
     section > div.content {
-      display: none;
       margin-top: 15px;
       padding: 15px;
-      background-color: #ffffff; /* White background for content */
+      background-color: #ffffff;
       border-radius: 10px;
-      box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); /* Inner shadow for depth */
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
     }
 
-    /* Unordered Lists */
     ul {
       list-style: none;
       padding: 0;
     }
 
-    /* List Items */
     li {
-      background: #f0f8ff; /* Light blue background for list items */
+      background: #f0f8ff;
       margin: 8px 0;
       padding: 12px 15px;
       border-radius: 8px;
@@ -70,45 +64,43 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Soft shadow for list items */
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
       transition: all 0.3s ease;
     }
 
     li:hover {
-      background: #e6f2ff; /* Lighter blue on hover */
-      transform: translateY(-2px); /* Slight lift effect */
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Enhanced shadow on hover */
+      background: #e6f2ff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    /* Buttons */
     button {
       cursor: pointer;
       border: none;
-      background: #007bff; /* Primary blue for buttons */
+      background: #007bff;
       color: white;
       padding: 10px 18px;
       border-radius: 5px;
       font-size: 1em;
       transition: background-color 0.3s ease, transform 0.2s ease;
-      box-shadow: 0 3px 8px rgba(0,123,255,0.3); /* Button shadow */
+      box-shadow: 0 3px 8px rgba(0,123,255,0.3);
     }
 
     button:hover {
-      background: #0056b3; /* Darker blue on hover */
-      transform: translateY(-1px); /* Slight lift */
+      background: #0056b3;
+      transform: translateY(-1px);
     }
 
     button:active {
-      transform: translateY(0); /* Press down effect */
+      transform: translateY(0);
       box-shadow: 0 1px 3px rgba(0,123,255,0.3);
     }
 
-    /* Input Field */
-    input[type="text"], input[id="task-input"] { /* Targeting specific input for consistency */
-      width: calc(100% - 70px); /* Adjust width to accommodate button */
+    input[type="text"], input[id="task-input"] {
+      width: calc(100% - 70px);
       padding: 10px;
       margin-right: 10px;
-      border: 1px solid #cce7ff; /* Light blue border */
+      border: 1px solid #cce7ff;
       border-radius: 5px;
       font-size: 1em;
       box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
@@ -116,59 +108,55 @@
 
     input[type="text"]:focus, input[id="task-input"]:focus {
       outline: none;
-      border-color: #007bff; /* Highlight border on focus */
+      border-color: #007bff;
       box-shadow: 0 0 8px rgba(0,123,255,0.2);
     }
 
-    /* Timer Display */
     #timer-display {
-      font-size: 3.8em; /* Larger font size */
+      font-size: 3.8em;
       text-align: center;
       margin: 25px 0;
       padding: 15px;
-      background: #28a745; /* Green for timer */
+      background: #28a745;
       color: white;
       border-radius: 10px;
       box-shadow: 0 5px 15px rgba(40,167,69,0.3);
-      letter-spacing: 2px; /* Spacing for digits */
+      letter-spacing: 2px;
       font-weight: bold;
     }
 
-    /* Calendar Days */
     .calendar .day {
-      background: #e9f7ef; /* Light green for calendar days */
+      background: #e9f7ef;
       margin: 7px 0;
       padding: 12px 15px;
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-      border-left: 5px solid #28a745; /* Green accent bar */
+      border-left: 5px solid #28a745;
       transition: all 0.3s ease;
     }
 
     .calendar .day:hover {
       background: #d4edda;
-      transform: translateX(3px); /* Slight shift on hover */
+      transform: translateX(3px);
     }
 
-    /* Remove Button */
     .remove-btn {
-      background: #dc3545; /* Red for remove button */
+      background: #dc3545;
       padding: 4px 10px;
       margin-left: 10px;
       border-radius: 4px;
       font-size: 0.9em;
       opacity: 0.8;
       transition: background-color 0.3s ease, opacity 0.3s ease;
-      box-shadow: none; /* Remove general button shadow */
+      box-shadow: none;
     }
 
     .remove-btn:hover {
       background: #c82333;
       opacity: 1;
-      transform: none; /* Override general button hover transform */
+      transform: none;
     }
 
-    /* Horizontal Rule */
     hr {
       border: 0;
       height: 1px;
@@ -176,9 +164,8 @@
       margin: 30px 0;
     }
 
-    /* Specific Home Section Styling */
     section:first-of-type {
-      background: #d1ecf1; /* Light blue background for welcome section */
+      background: #d1ecf1;
       padding: 20px;
       border-radius: 15px;
       box-shadow: 0 5px 15px rgba(0,123,255,0.1);
@@ -195,73 +182,80 @@
       font-size: 1.1em;
     }
 
+    .page { display: none; }
+    .page.active { display: block; }
   </style>
 </head>
 <body>
 
-<section>
-  <h1><b>Welcome to JOSHIN'S ACADEMIC PLANNER</b></h1>
-  <p><b><center>Success doesn’t come from what you do occasionally, it comes from what you do consistently.</center></b></p>
-</section>
+<!-- PAGE SECTIONS -->
+<div id="page-home" class="page active">
+  <section>
+    <h1><b>Welcome to JOSHIN'S ACADEMIC PLANNER</b></h1>
+    <p><b><center>Success doesn’t come from what you do occasionally, it comes from what you do consistently.</center></b></p>
+  </section>
+</div>
 
-<hr>
-
-<section>
-  <h2 onclick="toggleSection(this)">Your Subjects & Grades <span class="arrow">&#9660;</span></h2>
-  <div class="content">
-    <ul id="subject-list"></ul>
-  </div>
-</section>
-
-<hr>
-
-<section>
-  <h2 onclick="toggleSection(this)">To-Do List <span class="arrow">&#9660;</span></h2>
-  <div class="content">
-    <input id="task-input" placeholder="Add new task..." />
-    <button id="add-task-btn">Add</button>
-    <ul id="task-list"></ul>
-  </div>
-</section>
-
-<hr>
-
-<section>
-  <h2 onclick="toggleSection(this)">Calendar - Upcoming Deadlines <span class="arrow">&#9660;</span></h2>
-  <div class="content calendar">
-    <div class="day">June 12: Last Working Day</div>
-    <div class="day">June 20: Sem Exam Starts</div>
-    <div class="day">July 07: S3 Starts</div>
-  </div>
-</section>
-
-<hr>
-
-<section>
-  <h2 onclick="toggleSection(this)">Study Timer <span class="arrow">&#9660;</span></h2>
-  <div class="content">
-    <div id="timer-display">30:00</div>
-    <div style="text-align:center;">
-      <button id="start-btn">Start</button>
-      <button id="pause-btn">Pause</button>
-      <button id="reset-btn">Reset</button>
+<div id="page-subjects" class="page">
+  <section>
+    <h2>Your Subjects & Grades</h2>
+    <div class="content">
+      <ul id="subject-list"></ul>
     </div>
-  </div>
-</section>
+  </section>
+</div>
+
+<div id="page-todo" class="page">
+  <section>
+    <h2>To-Do List</h2>
+    <div class="content">
+      <input id="task-input" placeholder="Add new task..." />
+      <button id="add-task-btn">Add</button>
+      <ul id="task-list"></ul>
+    </div>
+  </section>
+</div>
+
+<div id="page-calendar" class="page">
+  <section>
+    <h2>Calendar - Upcoming Deadlines</h2>
+    <div class="content calendar">
+      <div class="day">June 12: Last Working Day</div>
+      <div class="day">June 20: Sem Exam Starts</div>
+      <div class="day">July 07: S3 Starts</div>
+    </div>
+  </section>
+</div>
+
+<div id="page-timer" class="page">
+  <section>
+    <h2>Study Timer</h2>
+    <div class="content">
+      <div id="timer-display">30:00</div>
+      <div style="text-align:center;">
+        <button id="start-btn">Start</button>
+        <button id="pause-btn">Pause</button>
+        <button id="reset-btn">Reset</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Bottom Navigation -->
+<hr>
+<div style="text-align: center; margin-top: 30px;">
+  <button onclick="showPage('page-home')">Home</button>
+  <button onclick="showPage('page-subjects')">Subjects</button>
+  <button onclick="showPage('page-todo')">To-Do</button>
+  <button onclick="showPage('page-calendar')">Calendar</button>
+  <button onclick="showPage('page-timer')">Timer</button>
+</div>
 
 <script>
-  // Toggle Section
-  function toggleSection(header) {
-    const content = header.nextElementSibling;
-    const arrow = header.querySelector('.arrow'); // Get the arrow element
-
-    if (content.style.display === 'block') {
-      content.style.display = 'none';
-      arrow.classList.remove('rotated'); // Remove rotated class
-    } else {
-      content.style.display = 'block';
-      arrow.classList.add('rotated'); // Add rotated class
-    }
+  // Page Navigation
+  function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
   }
 
   // Subjects Data

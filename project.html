@@ -1,378 +1,356 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Student Academic Planner Demo</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Joshin's Academic Planner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    /* --- YOUR ORIGINAL CSS STARTS HERE --- */
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      max-width: 700px;
-      margin: 30px auto;
-      padding: 25px;
-      background: linear-gradient(to bottom, #e0f2f7, #c1e7f0);
-      color: #333;
-      border: none;
-      border-radius: 15px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-      transition: all 0.3s ease;
+      font-family: 'Poppins', sans-serif;
     }
-
-    h1, h2 {
+    .section-hidden {
+      display: none;
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .task-highlight {
+      background-color: #e0e7ff;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    .calendar-day {
+      width: 14.28%;
       text-align: center;
-      cursor: pointer;
-      margin-top: 25px;
-      color: #0056b3;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
-      transition: color 0.3s ease;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      padding: 0.5rem;
+      border: 1px solid #e5e7eb;
     }
-
-    h1:hover, h2:hover {
-      color: #003f7f;
-    }
-
-    .arrow {
-      margin-left: 10px;
-      transition: transform 0.3s ease;
-    }
-
-    .arrow.rotated {
-      transform: rotate(180deg);
-    }
-
-    section > div.content {
-      margin-top: 15px;
-      padding: 15px;
-      background-color: #ffffff;
-      border-radius: 10px;
-      box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    li {
-      background: #f0f8ff;
-      margin: 8px 0;
-      padding: 12px 15px;
-      border-radius: 8px;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      transition: all 0.3s ease;
-    }
-
-    li:hover {
-      background: #e6f2ff;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    button {
-      cursor: pointer;
-      border: none;
-      background: #007bff;
-      color: white;
-      padding: 10px 18px;
-      border-radius: 5px;
-      font-size: 1em;
-      transition: background-color 0.3s ease, transform 0.2s ease;
-      box-shadow: 0 3px 8px rgba(0,123,255,0.3);
-    }
-
-    button:hover {
-      background: #0056b3;
-      transform: translateY(-1px);
-    }
-
-    button:active {
-      transform: translateY(0);
-      box-shadow: 0 1px 3px rgba(0,123,255,0.3);
-    }
-
-    input[type="text"], input[id="task-input"] {
-      width: calc(100% - 70px);
-      padding: 10px;
-      margin-right: 10px;
-      border: 1px solid #cce7ff;
-      border-radius: 5px;
-      font-size: 1em;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
-    }
-
-    input[type="text"]:focus, input[id="task-input"]:focus {
-      outline: none;
-      border-color: #007bff;
-      box-shadow: 0 0 8px rgba(0,123,255,0.2);
-    }
-
-    #timer-display {
-      font-size: 3.8em;
-      text-align: center;
-      margin: 25px 0;
-      padding: 15px;
-      background: #28a745;
-      color: white;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(40,167,69,0.3);
-      letter-spacing: 2px;
+    .today {
+      background-color: #e0e7ff;
       font-weight: bold;
     }
-
-    .calendar .day {
-      background: #e9f7ef;
-      margin: 7px 0;
-      padding: 12px 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-      border-left: 5px solid #28a745;
-      transition: all 0.3s ease;
+    .deadline {
+      background-color: #fef3c7;
+      position: relative;
     }
-
-    .calendar .day:hover {
-      background: #d4edda;
-      transform: translateX(3px);
+    .deadline::after {
+      content: attr(data-deadline);
+      font-size: 0.75rem;
+      color: #b45309;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 2px;
     }
-
-    .remove-btn {
-      background: #dc3545;
-      padding: 4px 10px;
-      margin-left: 10px;
-      border-radius: 4px;
-      font-size: 0.9em;
-      opacity: 0.8;
-      transition: background-color 0.3s ease, opacity 0.3s ease;
-      box-shadow: none;
-    }
-
-    .remove-btn:hover {
-      background: #c82333;
-      opacity: 1;
-      transform: none;
-    }
-
-    hr {
-      border: 0;
-      height: 1px;
-      background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0));
-      margin: 30px 0;
-    }
-
-    section:first-of-type {
-      background: #d1ecf1;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 5px 15px rgba(0,123,255,0.1);
-    }
-
-    section:first-of-type h1 {
-      color: #004085;
-      margin-bottom: 10px;
-    }
-
-    section:first-of-type p {
-      font-style: italic;
-      color: #004085;
-      font-size: 1.1em;
-    }
-
-    .page { display: none; }
-    .page.active { display: block; }
   </style>
 </head>
-<body>
-
-<!-- PAGE SECTIONS -->
-<div id="page-home" class="page active">
-  <section>
-    <h1><b>Welcome to JOSHIN'S ACADEMIC PLANNER</b></h1>
-    <p><b><center>Success doesn’t come from what you do occasionally, it comes from what you do consistently.</center></b></p>
-  </section>
-</div>
-
-<div id="page-subjects" class="page">
-  <section>
-    <h2>Your Subjects & Grades</h2>
-    <div class="content">
-      <ul id="subject-list"></ul>
-    </div>
-  </section>
-</div>
-
-<div id="page-todo" class="page">
-  <section>
-    <h2>To-Do List</h2>
-    <div class="content">
-      <input id="task-input" placeholder="Add new task..." />
-      <button id="add-task-btn">Add</button>
-      <ul id="task-list"></ul>
-    </div>
-  </section>
-</div>
-
-<div id="page-calendar" class="page">
-  <section>
-    <h2>Calendar - Upcoming Deadlines</h2>
-    <div class="content calendar">
-      <div class="day">June 12: Last Working Day</div>
-      <div class="day">June 20: Sem Exam Starts</div>
-      <div class="day">July 07: S3 Starts</div>
-    </div>
-  </section>
-</div>
-
-<div id="page-timer" class="page">
-  <section>
-    <h2>Study Timer</h2>
-    <div class="content">
-      <div id="timer-display">30:00</div>
-      <div style="text-align:center;">
-        <button id="start-btn">Start</button>
-        <button id="pause-btn">Pause</button>
-        <button id="reset-btn">Reset</button>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+  <!-- Navbar -->
+  <nav class="bg-indigo-600 text-white p-4 shadow-md sticky top-0 z-10">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold">Joshin's Academic Planner</h1>
+      <div class="space-x-4">
+        <button onclick="showSection('home')" class="hover:text-indigo-200">Home</button>
+        <button onclick="showSection('subjects')" class="hover:text-indigo-200">Subjects</button>
+        <button onclick="showSection('todo')" class="hover:text-indigo-200">To-Do</button>
+        <button onclick="showSection('calendar')" class="hover:text-indigo-200">Calendar</button>
+        <button onclick="showSection('timer')" class="hover:text-indigo-200">Timer</button>
       </div>
     </div>
-  </section>
-</div>
+  </nav>
 
-<!-- Bottom Navigation -->
-<hr>
-<div style="text-align: center; margin-top: 30px;">
-  <button onclick="showPage('page-home')">Home</button>
-  <button onclick="showPage('page-subjects')">Subjects</button>
-  <button onclick="showPage('page-todo')">To-Do</button>
-  <button onclick="showPage('page-calendar')">Calendar</button>
-  <button onclick="showPage('page-timer')">Timer</button>
-</div>
+  <!-- Main Content -->
+  <main class="container mx-auto p-6 flex-grow">
+    <!-- Home Section -->
+    <section id="home" class="fade-in">
+      <h2 class="text-3xl font-semibold text-indigo-600 mb-4">Welcome to Your Academic Planner</h2>
+      <p class="text-lg text-gray-600 mb-6">"Success doesn’t come from what you do occasionally, it comes from what you do consistently."</p>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-semibold text-indigo-600 mb-4">Quick Overview</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <h4 class="text-lg font-medium">Your Subjects</h4>
+            <ul id="home-subjects" class="list-disc pl-5 text-gray-600 mb-2">
+              <!-- Subjects will be populated by JavaScript -->
+            </ul>
+            <button onclick="showSection('subjects')" class="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 text-sm">Go to Subjects</button>
+          </div>
+          <div>
+            <h4 class="text-lg font-medium">Upcoming Deadlines</h4>
+            <ul id="home-deadlines" class="list-disc pl-5 text-gray-600">
+              <li>June 12: Last Working Day</li>
+              <li>June 20: Sem Exam Starts</li>
+              <li>July 07: S3 Starts</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-lg font-medium">Your Tasks</h4>
+            <ul id="home-tasks" class="list-disc pl-5 text-gray-600 mb-2">
+              <!-- Tasks will be populated by JavaScript -->
+            </ul>
+            <button onclick="showSection('todo')" class="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 text-sm">Go to Tasks</button>
+          </div>
+        </div>
+      </div>
+    </section>
 
-<script>
-  // Page Navigation
-  function showPage(pageId) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(pageId).classList.add('active');
-  }
+    <!-- Subjects Section -->
+    <section id="subjects" class="section-hidden">
+      <h2 class="text-3xl font-semibold text-indigo-600 mb-4">Your Subjects & Grades</h2>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="flex mb-4">
+          <input id="subject-input" type="text" placeholder="Enter subject name" class="border p-2 rounded-l-md flex-grow">
+          <input id="grade-input" type="text" placeholder="Grade" class="border p-2 w-24">
+          <button onclick="addSubject()" class="bg-indigo-600 text-white p-2 rounded-r-md hover:bg-indigo-700">Add</button>
+        </div>
+        <ul id="subject-list" class="list-disc pl-5 text-gray-600">
+          <!-- Subjects will be populated by JavaScript -->
+        </ul>
+      </div>
+    </section>
 
-  // Subjects Data
-  const subjectsData = [
-    { subject: "Maths", grade: "A+" },
-    { subject: "History", grade: "B+" },
-    { subject: "C Programming", grade: "A" }
-  ];
-  const subjectList = document.getElementById('subject-list');
-  subjectList.innerHTML = subjectsData.map(s => `<li>${s.subject}: <strong>${s.grade}</strong></li>`).join('');
+    <!-- To-Do Section -->
+    <section id="todo" class="section-hidden">
+      <h2 class="text-3xl font-semibold text-indigo-600 mb-4">To-Do List</h2>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="flex mb-4">
+          <input id="todo-input" type="text" placeholder="Enter task" class="border p-2 rounded-l-md flex-grow">
+          <button onclick="addTodo()" class="bg-indigo-600 text-white p-2 rounded-r-md hover:bg-indigo-700">Add</button>
+        </div>
+        <ul id="todo-list" class="list-disc pl-5 text-gray-600">
+          <!-- To-Dos will be populated by JavaScript -->
+        </ul>
+      </div>
+    </section>
 
-  // To-Do List
-  const taskInput = document.getElementById('task-input');
-  const addTaskBtn = document.getElementById('add-task-btn');
-  const taskList = document.getElementById('task-list');
-  let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    <!-- Calendar Section -->
+    <section id="calendar" class="section-hidden">
+      <h2 class="text-3xl font-semibold text-indigo-600 mb-4">Calendar - June 2025</h2>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <table class="w-full table-fixed">
+          <thead>
+            <tr class="bg-indigo-100">
+              <th class="p-2">Sun</th>
+              <th class="p-2">Mon</th>
+              <th class="p-2">Tue</th>
+              <th class="p-2">Wed</th>
+              <th class="p-2">Thu</th>
+              <th class="p-2">Fri</th>
+              <th class="p-2">Sat</th>
+            </tr>
+          </thead>
+          <tbody id="calendar-body">
+            <!-- Calendar will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-  function renderTasks() {
-    taskList.innerHTML = '';
-    tasks.forEach((task, idx) => {
-      const li = document.createElement('li');
-      li.textContent = task.text;
-      if(task.done) li.style.textDecoration = "line-through";
-      li.addEventListener('click', () => toggleDone(idx));
+    <!-- Timer Section -->
+    <section id="timer" class="section-hidden">
+      <h2 class="text-3xl font-semibold text-indigo-600 mb-4">Study Timer</h2>
+      <div class="bg-white p-6 rounded-lg shadow-md text-center">
+        <div id="timer-display" class="text-4xl font-mono text-indigo-600 mb-4">30:00</div>
+        <div class="space-x-4">
+          <button onclick="startTimer()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Start</button>
+          <button onclick="pauseTimer()" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Pause</button>
+          <button onclick="resetTimer()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Reset</button>
+        </div>
+      </div>
+    </section>
+  </main>
 
-      const removeBtn = document.createElement('button');
-      removeBtn.textContent = '✕';
-      removeBtn.className = 'remove-btn';
-      removeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        removeTask(idx);
+  <!-- Footer -->
+  <footer class="bg-indigo-600 text-white p-4 text-center">
+    <p>© 2025 Joshin's Academic Planner. All rights reserved.</p>
+  </footer>
+
+  <script>
+    let timerInterval;
+    let timeLeft = 1800; // 30 minutes in seconds
+    let isTimerRunning = false;
+
+    function showSection(sectionId) {
+      document.querySelectorAll('section').forEach(section => {
+        section.classList.add('section-hidden');
+        section.classList.remove('fade-in');
       });
-
-      li.appendChild(removeBtn);
-      taskList.appendChild(li);
-    });
-  }
-
-  function addTask() {
-    if(taskInput.value.trim()) {
-      tasks.push({text: taskInput.value.trim(), done: false});
-      taskInput.value = '';
-      saveTasks();
-      renderTasks();
+      const section = document.getElementById(sectionId);
+      section.classList.remove('section-hidden');
+      section.classList.add('fade-in');
+      // Clear previous highlights
+      document.querySelectorAll('.task-highlight').forEach(el => el.classList.remove('task-highlight'));
     }
-  }
 
-  function toggleDone(index) {
-    tasks[index].done = !tasks[index].done;
-    saveTasks();
-    renderTasks();
-  }
-
-  function removeTask(index) {
-    tasks.splice(index, 1);
-    saveTasks();
-    renderTasks();
-  }
-
-  function saveTasks() {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-  }
-
-  addTaskBtn.addEventListener('click', addTask);
-  taskInput.addEventListener('keydown', e => { if(e.key === 'Enter') addTask(); });
-  renderTasks();
-
-  // Pomodoro Timer
-  let workDuration = 30 * 60;
-  let breakDuration = 5 * 60;
-  let timer = null;
-  let timeLeft = workDuration;
-  let isWorkTime = true;
-
-  const display = document.getElementById('timer-display');
-  const startBtn = document.getElementById('start-btn');
-  const pauseBtn = document.getElementById('pause-btn');
-  const resetBtn = document.getElementById('reset-btn');
-
-  function updateDisplay() {
-    const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-    const secs = (timeLeft % 60).toString().padStart(2, '0');
-    display.textContent = `${mins}:${secs}`;
-  }
-
-  function tick() {
-    if(timeLeft > 0) {
-      timeLeft--;
-      updateDisplay();
-    } else {
-      clearInterval(timer);
-      timer = null;
-      alert(isWorkTime ? "Work session done! Time for a break." : "Break over! Back to work.");
-      isWorkTime = !isWorkTime;
-      timeLeft = isWorkTime ? workDuration : breakDuration;
-      updateDisplay();
+    function addSubject() {
+      const subjectInput = document.getElementById('subject-input');
+      const gradeInput = document.getElementById('grade-input');
+      const subjectList = document.getElementById('subject-list');
+      const homeSubjects = document.getElementById('home-subjects');
+      if (subjectInput.value.trim() !== '') {
+        const subjectText = `${subjectInput.value} - Grade: ${gradeInput.value || 'N/A'}`;
+        // Add to Subjects section
+        const subjectLi = document.createElement('li');
+        subjectLi.textContent = subjectText;
+        subjectList.appendChild(subjectLi);
+        // Add to Home section
+        const homeSubjectLi = document.createElement('li');
+        homeSubjectLi.textContent = subjectText;
+        homeSubjects.appendChild(homeSubjectLi);
+        subjectInput.value = '';
+        gradeInput.value = '';
+      }
     }
-  }
 
-  startBtn.onclick = () => {
-    if (!timer) timer = setInterval(tick, 1000);
-  };
+    function addTodo() {
+      const todoInput = document.getElementById('todo-input');
+      const todoList = document.getElementById('todo-list');
+      const homeTasks = document.getElementById('home-tasks');
+      if (todoInput.value.trim() !== '') {
+        const taskText = todoInput.value;
+        // Add to To-Do section
+        const todoLi = document.createElement('li');
+        todoLi.textContent = taskText;
+        todoLi.dataset.task = taskText; // Store task text for matching
+        todoList.appendChild(todoLi);
+        // Add to Home section with click functionality
+        const homeLi = document.createElement('li');
+        homeLi.textContent = taskText;
+        homeLi.classList.add('cursor-pointer', 'hover:text-indigo-600');
+        homeLi.onclick = () => {
+          showSection('todo');
+          // Highlight matching task in To-Do section
+          document.querySelectorAll('#todo-list li').forEach(li => {
+            if (li.dataset.task === taskText) {
+              li.classList.add('task-highlight');
+              li.scrollIntoView({ behavior: 'smooth' });
+            }
+          });
+        };
+        homeTasks.appendChild(homeLi);
+        todoInput.value = '';
+      }
+    }
 
-  pauseBtn.onclick = () => {
-    clearInterval(timer);
-    timer = null;
-  };
+    function generateCalendar() {
+      const calendarBody = document.getElementById('calendar-body');
+      const deadlines = [
+        { date: 12, description: 'Last Working Day' },
+        { date: 20, description: 'Sem Exam Starts' },
+      ];
+      const today = 12; // June 12, 2025
+      const daysInMonth = 30; // June has 30 days
+      const firstDay = new Date(2025, 5, 1).getDay(); // June 1, 2025 is a Sunday (0)
 
-  resetBtn.onclick = () => {
-    clearInterval(timer);
-    timer = null;
-    timeLeft = isWorkTime ? workDuration : breakDuration;
-    updateDisplay();
-  };
+      let calendarHTML = '';
+      let day = 1;
+      for (let i = 0; i < 6; i++) { // Max 6 weeks
+        calendarHTML += '<tr>';
+        for (let j = 0; j < 7; j++) {
+          if (i === 0 && j < firstDay) {
+            calendarHTML += '<td class="calendar-day"></td>';
+          } else if (day <= daysInMonth) {
+            const isToday = day === today;
+            const deadline = deadlines.find(d => d.date === day);
+            const classes = `calendar-day ${isToday ? 'today' : ''} ${deadline ? 'deadline' : ''}`;
+            const deadlineAttr = deadline ? `data-deadline="${deadline.description}"` : '';
+            calendarHTML += `<td class="${classes}" ${deadlineAttr}>${day}</td>`;
+            day++;
+          } else {
+            calendarHTML += '<td class="calendar-day"></td>';
+          }
+        }
+        calendarHTML += '</tr>';
+        if (day > daysInMonth) break;
+      }
+      calendarBody.innerHTML = calendarHTML;
+    }
 
-  updateDisplay();
-</script>
+    function startTimer() {
+      if (!isTimerRunning) {
+        isTimerRunning = true;
+        timerInterval = setInterval(() => {
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            document.getElementById('timer-display').textContent = 'Done!';
+            isTimerRunning = false;
+            return;
+          }
+          timeLeft--;
+          updateTimerDisplay();
+        }, 1000);
+      }
+    }
 
+    function pauseTimer() {
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      timeLeft = 1800;
+      updateTimerDisplay();
+    }
+
+    function updateTimerDisplay() {
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      document.getElementById('timer-display').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // Initialize
+    showSection('home');
+    updateTimerDisplay();
+    generateCalendar();
+  </script>
 </body>
 </html>

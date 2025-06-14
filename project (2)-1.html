@@ -37,14 +37,42 @@
         }
         return gk_fileData[filename] || "";
         }
-        </script><!DOCTYPE html>
-<html lang="en">
+</script>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Joshin's Academic Planner</title>
+
+  <!-- Tailwind CSS CDN with fallback -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <script>
+    if (!window.tailwind) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css';
+      document.head.appendChild(link);
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <!-- JavaScript Disabled Warning -->
+  <noscript>
+    <style>
+      body::before {
+        content: "This page requires JavaScript to function correctly.";
+        display: block;
+        background-color: red;
+        color: white;
+        padding: 1em;
+        font-weight: bold;
+        text-align: center;
+      }
+    </style>
+  </noscript>
+
+  <!-- Custom Styles -->
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -56,8 +84,12 @@
       animation: fadeIn 0.5s ease-in;
     }
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
     }
     .task-highlight {
       background-color: #e0e7ff;
